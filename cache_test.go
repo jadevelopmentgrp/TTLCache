@@ -60,7 +60,7 @@ func TestCache_SkipTtlExtensionOnHit(t *testing.T) {
 
 	cache.SkipTtlExtensionOnHit(true)
 	cache.Set("expireTest", "!")
-	// will loop if item does not expire
+	// will loop if Item does not expire
 	for _, found := cache.Get("expireTest"); found; _, found = cache.Get("expireTest") {
 	}
 }
@@ -158,7 +158,7 @@ func TestCache_SkipTtlExtensionOnHit_ForRacesAcrossGoroutines(t *testing.T) {
 }
 
 // test github issue #14
-// Testing expiration callback would continue with the next item in list, even when it exceeds list lengths
+// Testing expiration callback would continue with the next Item in list, even when it exceeds list lengths
 func TestCache_SetCheckExpirationCallback(t *testing.T) {
 	iterated := 0
 	ch := make(chan struct{})
@@ -187,7 +187,7 @@ func TestCache_SetCheckExpirationCallback(t *testing.T) {
 
 // test github issue #9
 // Due to scheduling the expected TTL of the top entry can become negative (already expired)
-// This is an issue because negative TTL at the item level was interpreted as 'use global TTL'
+// This is an issue because negative TTL at the Item level was interpreted as 'use global TTL'
 // Which is not right when we become negative due to scheduling.
 // This test could use improvement as it's not requiring a lot of time to trigger.
 func TestCache_SetExpirationCallback(t *testing.T) {
@@ -265,8 +265,8 @@ func TestCacheIndividualExpirationBiggerThanGlobal(t *testing.T) {
 	cache.SetWithTTL("key", "value", time.Duration(100*time.Millisecond))
 	<-time.After(150 * time.Millisecond)
 	data, exists := cache.Get("key")
-	assert.Equal(t, exists, false, "Expected item to not exist")
-	assert.Nil(t, data, "Expected item to be nil")
+	assert.Equal(t, exists, false, "Expected Item to not exist")
+	assert.Nil(t, data, "Expected Item to be nil")
 }
 
 func TestCacheGlobalExpirationByGlobal(t *testing.T) {
@@ -276,18 +276,18 @@ func TestCacheGlobalExpirationByGlobal(t *testing.T) {
 	cache.Set("key", "value")
 	<-time.After(50 * time.Millisecond)
 	data, exists := cache.Get("key")
-	assert.Equal(t, exists, true, "Expected item to exist in cache")
-	assert.Equal(t, data.(string), "value", "Expected item to have 'value' in value")
+	assert.Equal(t, exists, true, "Expected Item to exist in cache")
+	assert.Equal(t, data.(string), "value", "Expected Item to have 'value' in value")
 
 	cache.SetTTL(time.Duration(50 * time.Millisecond))
 	data, exists = cache.Get("key")
-	assert.Equal(t, exists, true, "Expected item to exist in cache")
-	assert.Equal(t, data.(string), "value", "Expected item to have 'value' in value")
+	assert.Equal(t, exists, true, "Expected Item to exist in cache")
+	assert.Equal(t, data.(string), "value", "Expected Item to have 'value' in value")
 
 	<-time.After(100 * time.Millisecond)
 	data, exists = cache.Get("key")
-	assert.Equal(t, exists, false, "Expected item to not exist")
-	assert.Nil(t, data, "Expected item to be nil")
+	assert.Equal(t, exists, false, "Expected Item to not exist")
+	assert.Nil(t, data, "Expected Item to be nil")
 }
 
 func TestCacheGlobalExpiration(t *testing.T) {
@@ -313,7 +313,7 @@ func TestCacheMixedExpirations(t *testing.T) {
 	cache.SetTTL(time.Duration(100 * time.Millisecond))
 	cache.Set("key_2", "value")
 	<-time.After(150 * time.Millisecond)
-	assert.Equal(t, 1, cache.Count(), "Cache should have only 1 item")
+	assert.Equal(t, 1, cache.Count(), "Cache should have only 1 Item")
 }
 
 func TestCacheIndividualExpiration(t *testing.T) {
@@ -339,14 +339,14 @@ func TestCacheGet(t *testing.T) {
 	defer cache.Close()
 
 	data, exists := cache.Get("hello")
-	assert.Equal(t, exists, false, "Expected empty cache to return no data")
-	assert.Nil(t, data, "Expected data to be empty")
+	assert.Equal(t, exists, false, "Expected empty cache to return no Data")
+	assert.Nil(t, data, "Expected Data to be empty")
 
 	cache.Set("hello", "world")
 	data, exists = cache.Get("hello")
-	assert.NotNil(t, data, "Expected data to be not nil")
-	assert.Equal(t, true, exists, "Expected data to exist")
-	assert.Equal(t, "world", (data.(string)), "Expected data content to be 'world'")
+	assert.NotNil(t, data, "Expected Data to be not nil")
+	assert.Equal(t, true, exists, "Expected Data to exist")
+	assert.Equal(t, "world", (data.(string)), "Expected Data content to be 'world'")
 }
 
 func TestCacheExpirationCallbackFunction(t *testing.T) {
@@ -372,7 +372,7 @@ func TestCacheExpirationCallbackFunction(t *testing.T) {
 }
 
 // TestCacheCheckExpirationCallbackFunction should consider that the next entry in the queue
-// needs to be considered for eviction even if the callback returns no eviction for the current item
+// needs to be considered for eviction even if the callback returns no eviction for the current Item
 func TestCacheCheckExpirationCallbackFunction(t *testing.T) {
 	expiredCount := 0
 	var lock sync.Mutex
@@ -444,7 +444,7 @@ func TestCacheSetWithTTLExistItem(t *testing.T) {
 	cache.SetWithTTL("key", "value2", time.Duration(50*time.Millisecond))
 	data, exists := cache.Get("key")
 	assert.Equal(t, true, exists, "Expected 'key' to exist")
-	assert.Equal(t, "value2", data.(string), "Expected 'data' to have value 'value2'")
+	assert.Equal(t, "value2", data.(string), "Expected 'Data' to have value 'value2'")
 }
 
 func TestCache_Purge(t *testing.T) {

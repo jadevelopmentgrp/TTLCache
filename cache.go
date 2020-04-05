@@ -5,17 +5,17 @@ import (
 	"time"
 )
 
-// CheckExpireCallback is used as a callback for an external check on item expiration
+// CheckExpireCallback is used as a callback for an external check on Item expiration
 type checkExpireCallback func(key string, value interface{}) bool
 
-// ExpireCallback is used as a callback on item expiration or when notifying of an item new to the cache
+// ExpireCallback is used as a callback on Item expiration or when notifying of an Item new to the cache
 type expireCallback func(key string, value interface{})
 
 // Cache is a synchronized map of items that can auto-expire once stale
 type Cache struct {
 	mutex                  sync.Mutex
 	ttl                    time.Duration
-	items                  map[string]*item
+	items                  map[string]*Item
 	expireCallback         expireCallback
 	checkExpireCallback    checkExpireCallback
 	newItemCallback        expireCallback
@@ -27,15 +27,15 @@ type Cache struct {
 	isShutDown             bool
 }
 
-func (cache *Cache) GetItem(key string) (*item, bool, bool) {
+func (cache *Cache) GetItem(key string) (*Item, bool, bool) {
 	item, exists := cache.items[key]
 	if !exists || item.expired() {
 		return nil, false, false
 	}
 
-	if item.ttl >= 0 && (item.ttl > 0 || cache.ttl > 0) {
-		if cache.ttl > 0 && item.ttl == 0 {
-			item.ttl = cache.ttl
+	if item.TTL >= 0 && (item.TTL > 0 || cache.ttl > 0) {
+		if cache.ttl > 0 && item.TTL == 0 {
+			item.TTL = cache.ttl
 		}
 
 		if !cache.skipTTLExtension {
@@ -45,7 +45,7 @@ func (cache *Cache) GetItem(key string) (*item, bool, bool) {
 	}
 
 	expirationNotification := false
-	if cache.expirationTime.After(time.Now().Add(item.ttl)) {
+	if cache.expirationTime.After(time.Now().Add(item.TTL)) {
 		expirationNotification = true
 	}
 	return item, exists, expirationNotification
@@ -57,8 +57,8 @@ func (cache *Cache) startExpirationProcessing() {
 		var sleepTime time.Duration
 		cache.mutex.Lock()
 		if cache.priorityQueue.Len() > 0 {
-			sleepTime = time.Until(cache.priorityQueue.items[0].expireAt)
-			if sleepTime < 0 && cache.priorityQueue.items[0].expireAt.IsZero() {
+			sleepTime = time.Until(cache.priorityQueue.items[0].ExpireAt)
+			if sleepTime < 0 && cache.priorityQueue.items[0].ExpireAt.IsZero() {
 				sleepTime = time.Hour
 			} else if sleepTime < 0 {
 				sleepTime = time.Microsecond
@@ -95,7 +95,7 @@ func (cache *Cache) startExpirationProcessing() {
 			for item := cache.priorityQueue.items[i]; item.expired(); item = cache.priorityQueue.items[i] {
 
 				if cache.checkExpireCallback != nil {
-					if !cache.checkExpireCallback(item.key, item.data) {
+					if !cache.checkExpireCallback(item.key, item.Data) {
 						item.touch()
 						cache.priorityQueue.update(item)
 						i++
@@ -109,7 +109,7 @@ func (cache *Cache) startExpirationProcessing() {
 				cache.priorityQueue.remove(item)
 				delete(cache.items, item.key)
 				if cache.expireCallback != nil {
-					go cache.expireCallback(item.key, item.data)
+					go cache.expireCallback(item.key, item.Data)
 				}
 				if cache.priorityQueue.Len() == 0 {
 					goto done
@@ -125,7 +125,7 @@ func (cache *Cache) startExpirationProcessing() {
 	}
 }
 
-// Close calls Purge, and then stops the goroutine that does ttl checking, for a clean shutdown.
+// Close calls Purge, and then stops the goroutine that does TTL checking, for a clean shutdown.
 // The cache is no longer cleaning up after the first call to Close, repeated calls are safe though.
 func (cache *Cache) Close() {
 
@@ -148,7 +148,7 @@ func (cache *Cache) Set(key string, data interface{}) {
 	cache.SetWithTTL(key, data, ItemExpireWithGlobalTTL)
 }
 
-// SetWithTTL is a thread-safe way to add new items to the map with individual ttl
+// SetWithTTL is a thread-safe way to add new items to the map with individual TTL
 func (cache *Cache) SetWithTTL(key string, data interface{}, ttl time.Duration) {
 	cache.mutex.Lock()
 	item, exists, _ := cache.getItem(key)
@@ -182,7 +182,7 @@ func (cache *Cache) SetWithTTL(key string, data interface{}, ttl time.Duration) 
 }
 
 // Get is a thread-safe way to lookup items
-// Every lookup, also touches the item, hence extending it's life
+// Every lookup, also touches the Item, hence extending it's life
 func (cache *Cache) Get(key string) (interface{}, bool) {
 	cache.mutex.Lock()
 	item, exists, triggerExpirationNotification := cache.getItem(key)
@@ -239,18 +239,18 @@ func (cache *Cache) SetTTL(ttl time.Duration) {
 	cache.expirationNotification <- true
 }
 
-// SetExpirationCallback sets a callback that will be called when an item expires
+// SetExpirationCallback sets a callback that will be called when an Item expires
 func (cache *Cache) SetExpirationCallback(callback expireCallback) {
 	cache.expireCallback = callback
 }
 
-// SetCheckExpirationCallback sets a callback that will be called when an item is about to expire
-// in order to allow external code to decide whether the item expires or remains for another TTL cycle
+// SetCheckExpirationCallback sets a callback that will be called when an Item is about to expire
+// in order to allow external code to decide whether the Item expires or remains for another TTL cycle
 func (cache *Cache) SetCheckExpirationCallback(callback checkExpireCallback) {
 	cache.checkExpireCallback = callback
 }
 
-// SetNewItemCallback sets a callback that will be called when a new item is added to the cache
+// SetNewItemCallback sets a callback that will be called when a new Item is added to the cache
 func (cache *Cache) SetNewItemCallback(callback expireCallback) {
 	cache.newItemCallback = callback
 }
@@ -265,7 +265,7 @@ func (cache *Cache) SkipTtlExtensionOnHit(value bool) {
 // Purge will remove all entries
 func (cache *Cache) Purge() {
 	cache.mutex.Lock()
-	cache.items = make(map[string]*item)
+	cache.items = make(map[string]*Item)
 	cache.priorityQueue = newPriorityQueue()
 	cache.mutex.Unlock()
 }
@@ -276,7 +276,7 @@ func NewCache() *Cache {
 	shutdownChan := make(chan chan struct{})
 
 	cache := &Cache{
-		items:                  make(map[string]*item),
+		items:                  make(map[string]*Item),
 		priorityQueue:          newPriorityQueue(),
 		expirationNotification: make(chan bool),
 		expirationTime:         time.Now(),

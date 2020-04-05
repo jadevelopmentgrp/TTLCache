@@ -11,25 +11,25 @@ func newPriorityQueue() *priorityQueue {
 }
 
 type priorityQueue struct {
-	items []*item
+	items []*Item
 }
 
-func (pq *priorityQueue) update(item *item) {
+func (pq *priorityQueue) update(item *Item) {
 	heap.Fix(pq, item.queueIndex)
 }
 
-func (pq *priorityQueue) push(item *item) {
+func (pq *priorityQueue) push(item *Item) {
 	heap.Push(pq, item)
 }
 
-func (pq *priorityQueue) pop() *item {
+func (pq *priorityQueue) pop() *Item {
 	if pq.Len() == 0 {
 		return nil
 	}
-	return heap.Pop(pq).(*item)
+	return heap.Pop(pq).(*Item)
 }
 
-func (pq *priorityQueue) remove(item *item) {
+func (pq *priorityQueue) remove(item *Item) {
 	heap.Remove(pq, item.queueIndex)
 }
 
@@ -40,13 +40,13 @@ func (pq priorityQueue) Len() int {
 
 // Less will consider items with time.Time default value (epoch start) as more than set items.
 func (pq priorityQueue) Less(i, j int) bool {
-	if pq.items[i].expireAt.IsZero() {
+	if pq.items[i].ExpireAt.IsZero() {
 		return false
 	}
-	if pq.items[j].expireAt.IsZero() {
+	if pq.items[j].ExpireAt.IsZero() {
 		return true
 	}
-	return pq.items[i].expireAt.Before(pq.items[j].expireAt)
+	return pq.items[i].ExpireAt.Before(pq.items[j].ExpireAt)
 }
 
 func (pq priorityQueue) Swap(i, j int) {
@@ -56,7 +56,7 @@ func (pq priorityQueue) Swap(i, j int) {
 }
 
 func (pq *priorityQueue) Push(x interface{}) {
-	item := x.(*item)
+	item := x.(*Item)
 	item.queueIndex = len(pq.items)
 	pq.items = append(pq.items, item)
 }
