@@ -27,7 +27,7 @@ type Cache struct {
 	isShutDown             bool
 }
 
-func (cache *Cache) getItem(key string) (*item, bool, bool) {
+func (cache *Cache) GetItem(key string) (*item, bool, bool) {
 	item, exists := cache.items[key]
 	if !exists || item.expired() {
 		return nil, false, false
