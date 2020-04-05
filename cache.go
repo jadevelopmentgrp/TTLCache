@@ -198,6 +198,18 @@ func (cache *Cache) Get(key string) (interface{}, bool) {
 	return dataToReturn, exists
 }
 
+func (cache *Cache) GetTTL(key string) (time.Duration, bool) {
+	cache.mutex.Lock()
+	item, exists, _ := cache.getItem(key)
+	cache.mutex.Unlock()
+
+	if exists {
+		return item.ttl, true
+	} else {
+		return 0, false
+	}
+}
+
 func (cache *Cache) Remove(key string) bool {
 	cache.mutex.Lock()
 	object, exists := cache.items[key]
