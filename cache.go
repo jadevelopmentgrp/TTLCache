@@ -151,19 +151,19 @@ func (cache *Cache) Set(key string, data interface{}) {
 // SetWithTTL is a thread-safe way to add new items to the map with individual TTL
 func (cache *Cache) SetWithTTL(key string, data interface{}, ttl time.Duration) {
 	cache.mutex.Lock()
-	item, exists, _ := cache.getItem(key)
+	item, exists, _ := cache.GetItem(key)
 
 	if exists {
-		item.data = data
-		item.ttl = ttl
+		item.Data = data
+		item.TTL = ttl
 	} else {
 		item = newItem(key, data, ttl)
 		cache.items[key] = item
 	}
 
-	if item.ttl >= 0 && (item.ttl > 0 || cache.ttl > 0) {
-		if cache.ttl > 0 && item.ttl == 0 {
-			item.ttl = cache.ttl
+	if item.TTL >= 0 && (item.TTL > 0 || cache.ttl > 0) {
+		if cache.ttl > 0 && item.TTL == 0 {
+			item.TTL = cache.ttl
 		}
 		item.touch()
 	}
@@ -185,11 +185,11 @@ func (cache *Cache) SetWithTTL(key string, data interface{}, ttl time.Duration) 
 // Every lookup, also touches the Item, hence extending it's life
 func (cache *Cache) Get(key string) (interface{}, bool) {
 	cache.mutex.Lock()
-	item, exists, triggerExpirationNotification := cache.getItem(key)
+	item, exists, triggerExpirationNotification := cache.GetItem(key)
 
 	var dataToReturn interface{}
 	if exists {
-		dataToReturn = item.data
+		dataToReturn = item.Data
 	}
 	cache.mutex.Unlock()
 	if triggerExpirationNotification {
@@ -200,11 +200,11 @@ func (cache *Cache) Get(key string) (interface{}, bool) {
 
 func (cache *Cache) GetTTL(key string) (time.Duration, bool) {
 	cache.mutex.Lock()
-	item, exists, _ := cache.getItem(key)
+	item, exists, _ := cache.GetItem(key)
 	cache.mutex.Unlock()
 
 	if exists {
-		return item.ttl, true
+		return item.TTL, true
 	} else {
 		return 0, false
 	}
