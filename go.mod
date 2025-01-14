@@ -1,4 +1,4 @@
-module github.com/TicketsBot/ttlcache
+module github.com/jadevelopmentgrp/Ticket-TTLCache
 
 go 1.14
 
